@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+
+    {% if user == current_user %}
+        <h1>{{ user.username }} (it is you)</h1>
+    {% elif relation.username %}
+        <h1>{{ user.username }} ({{ relation.username }})</h1>
+    {% else %}
+        <h1>{{ user.username }}</h1>
+    {% endif %}
+
+    <p>
+        id: {{ user.id }}<br>
+        Number: {{ user.phone_number }}<br>
+        Email: {{ user.email }}<br>
+        Contacts: {{ user.followed.count() }}<br>
+        {% if relation.note %}
+            Your note: {{ relation.note }}
+        {% endif %}
+    </p>
+
+
+    {% if user == current_user %}
+        <p><a href="{{ url_for('index') }}"></a></p>
+    {% elif not current_user.is_following(user) %}
+        <p><a href="{{ url_for('follow', username=user.username) }}">Add contact in phone book</a></p>
+    {% else %}
+        <p><a href="{{ url_for('unfollow', username=user.username) }}">delete contact from phonebook</a></p>
+    {% endif %}<br>
+
+
+    <form action="" method="post">
+        {{ form_relation.hidden_tag() }}
+        <h2>Add additional info about contact (only for you):</h2>
+        <p>
+            {{ form_relation.username.label }}<br>
+            {{ form_relation.username(size=32) }}<br>
+        </p>
+        <p>
+            {{ form_relation.note.label }}<br>
+            {{ form_relation.note(size=32) }}<br>
+        </p>
+        <p>{{ form_relation.submit_rel() }}</p>
+
+        {% include '_validation_error.html' %}
+    </form>
+
+<!--    <h2>Chat:</h2>-->
+<!--    {% for message in current_user.get_messages(user) %}-->
+<!--        {{ message.relation.owner.username }} - -->
+<!--        {{ message.date }}:</br>-->
+<!--        {{ message.message }}</br></br>-->
+<!--    {% else %}-->
+<!--        You haven't sent or received messages from this person-->
+<!--    {% endfor %}-->
+
+        <h2>Chat:</h2>
+        {% for message in messages %}
+            {{ message.relation.owner.username }} -
+            {{ message.date }}:</br>
+            {{ message.message }}</br></br>
+        {% else %}
+            You haven't sent or received messages from this person
+        {% endfor %}
+        {% if prev_url %}
+            <a href="{{ prev_url }}">{{ '<<<{}'.format(page-1) }}</a>
+        {% else %}
+            <p>     </p>
+        {% endif %}
+        {% if next_url %}
+            <a href="{{ next_url }}">{{ '{}>>>'.format(page+1) }}</a>
+        {% endif %}
+
+
+    <form action="" method="post">
+        {{ form_chat.hidden_tag() }}
+        <p>
+            {{ form_chat.message.label }}<br>
+            {{ form_chat.message(size=128) }}<br>
+        </p>
+        <p>{{ form_chat.submit_send() }}</p>
+
+        {% include '_validation_error.html' %}
+    </form>
+
+{% endblock %}
