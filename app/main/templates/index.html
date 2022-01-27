@@ -24,7 +24,7 @@
     {% for follower in current_user.followed.all() %}
         <table>
             <tr valign="top">
-                <td><a href="{{ url_for('user', username=follower.username) }}">{{ follower.username }}</a></td>
+                <td><a href="{{ url_for('main.user', username=follower.username) }}">{{ follower.username }}</a></td>
             </tr>
         </table>
     {% else %}
