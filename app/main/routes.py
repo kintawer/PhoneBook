@@ -1,12 +1,10 @@
 from flask import render_template, url_for, flash, request
-from werkzeug.urls import url_parse
 from werkzeug.utils import redirect
 
 from app import app, db
-from flask_login import current_user, login_user, logout_user, login_required
+from flask_login import current_user, login_required
 
-from app.forms import RegistrationForm, LoginForm, SearchUserForm, \
-    RelationForm, ChatForm
+from app.forms import SearchUserForm, RelationForm, ChatForm
 from app.models import User, Relation, Message
 
 
@@ -74,52 +72,6 @@ def user(username):
                            form_relation=form_relation, form_chat=form_chat,
                            next_url=next_url, prev_url=prev_url,
                            messages=messages.items, page=page)
-
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-
-    form = RegistrationForm()
-
-    if not form.validate_on_submit():
-        return render_template('register.html', title='Register', form=form)
-
-    user = User(username=form.username.data, email=form.email.data,
-                phone_number=form.phone_number.data)
-    user.set_password(form.password.data)
-    db.session.add(user)
-    db.session.commit()
-    flash('Congratulations, you are now a registered user!')
-    return redirect(url_for('login'))
-
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-
-    form = LoginForm()
-    if not form.validate_on_submit():
-        return render_template('login.html', title='Sign In', form=form)
-
-    user = User.query.filter_by(username=form.username.data).first()
-    if user is None or not user.check_password(form.password.data):
-        flash('Invalid username or password')
-        return redirect(url_for('login'))
-    login_user(user, remember=form.remember_me.data)
-    next_page = request.args.get('next')
-
-    if not next_page or url_parse(next_page).netloc != '':
-        next_page = url_for('index')
-    return redirect(next_page)
 
 
 @app.route('/follow/<username>')
