@@ -2,30 +2,13 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User
-
-
-def validate_number(form, number):
-    # ex 8 911 940 50 20
-    # ex +7 911 940 50 20
-    if not number.data:
-        return
-
-    if number.data[0] == '+':
-        if not number.data[1:].isdigit():
-            raise ValidationError('Please enter an integer phone number')
-        if len(number.data) != 12:
-            raise ValidationError('Please check phone number')
-    else:
-        if not number.data.isdigit():
-            raise ValidationError('Please enter an integer phone number')
-        if len(number.data) != 11:
-            raise ValidationError('Please check phone number')
+from app.validators import validate_ru_number
 
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    phone_number = StringField('PhoneNumber', validators=[validate_number])
+    phone_number = StringField('PhoneNumber', validators=[validate_ru_number])
     password = PasswordField('Password', validators=[DataRequired()])
     password2 = PasswordField(
         'Repeat Password', validators=[DataRequired(), EqualTo('password')])

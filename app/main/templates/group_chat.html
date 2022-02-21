@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+    {% if messages %}
+        {% include '_chat.html' %}
+        </br>{{ wtf.quick_form(form_change_chat_name) }}
+    {% endif %}
+    </br>{{ wtf.quick_form(form_create_chat) }}
+
+
+{% endblock %}

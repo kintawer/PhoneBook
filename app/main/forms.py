@@ -1,29 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import ValidationError
+from wtforms import StringField, SubmitField, SelectMultipleField
 
-
-def validate_number(form, number):
-    # ex 8 911 940 50 20
-    # ex +7 911 940 50 20
-    if not number.data:
-        return
-
-    if number.data[0] == '+':
-        if not number.data[1:].isdigit():
-            raise ValidationError('Please enter an integer phone number')
-        if len(number.data) != 12:
-            raise ValidationError('Please check phone number')
-    else:
-        if not number.data.isdigit():
-            raise ValidationError('Please enter an integer phone number')
-        if len(number.data) != 11:
-            raise ValidationError('Please check phone number')
+from app.validators import validate_ru_number
 
 
 class SearchUserForm(FlaskForm):
     username = StringField('Username')
-    phone_number = StringField('PhoneNumber', validators=[validate_number])
+    phone_number = StringField('PhoneNumber', validators=[validate_ru_number])
     submit = SubmitField('Search contact')
 
 
@@ -38,7 +21,15 @@ class ChatForm(FlaskForm):
     submit_send = SubmitField('Send message')
 
 
+class CreateChatForm(FlaskForm):
+    users = SelectMultipleField('Contacts:')
+    submit_adding_user = SubmitField('Add contacts in this chat')
+
+    def __init__(self, choices=["You haven't contacts"]):
+        super().__init__()
+        self.users.choices = choices
 
 
-
-
+class ChangeChatNameForm(FlaskForm):
+    new_name = StringField('New chat name')
+    submit_change = SubmitField('Change chat name')

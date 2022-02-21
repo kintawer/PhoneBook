@@ -17,6 +17,12 @@ followers = db.Table(
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+chats = db.Table(
+    'chats',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('chat_id', db.Integer, db.ForeignKey('chat.id'))
+)
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +30,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     phone_number = db.Column(db.String(15), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    messages = db.relationship('Message', backref='user', lazy='dynamic')
     about_me = db.relationship('Relation', backref='subject',
                                lazy='dynamic',
                                foreign_keys='Relation.subject_id')
@@ -36,10 +43,14 @@ class User(UserMixin, db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic'
     )
+    chats = db.relationship(
+        'Chat', secondary=chats,
+        backref=db.backref('users', lazy='dynamic'), lazy='dynamic'
+    )
 
     def __repr__(self):
-        return '<User {} have id {} and phone number {}.>'.format(
-            self.username, self.id, self.phone_number)
+        return f'<User { self.username} have id {self.id}' \
+               f' and phone number {self.phone_number}.>'
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -59,25 +70,17 @@ class User(UserMixin, db.Model):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
 
-    # def is_noted(self, user):
-    #     for notes in self.about_contacts.all():
-    #         return notes.subject_id == user.id
-
     def get_relation(self, user):
         for notes in self.about_contacts.all():
             if notes.subject_id == user.id:
                 return notes
 
-    def get_messages(self, user):
-        return Message.query.join(Relation, (
-                (Relation.owner_id == user.id) &
-                (Relation.subject_id == self.id) &
-                (Relation.id == Message.relation_id)
-                ) | (
-                (Relation.subject_id == user.id) &
-                (Relation.owner_id == self.id) &
-                (Relation.id == Message.relation_id)))\
-            .order_by(Message.date.desc())
+    def get_chat_with(self, *users):
+        all_users = set(users)
+        all_users.add(self)
+        for chat in self.chats.all():
+            if set(chat.users.all()) == all_users:
+                return chat
 
 
 class Relation(db.Model):
@@ -86,20 +89,27 @@ class Relation(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     username = db.Column(db.String(64), index=True, unique=True)
     note = db.Column(db.String(128))
-    messages = db.relationship('Message', backref='relation', lazy='dynamic')
 
     def __repr__(self):
-        return '<Entry {}. User {} ---> {}.>'.format(
-            self.id, self.owner.username, self.subject.username)
+        return f'<Entry {self.id}. ' \
+               f'User {self.owner.username} ---> {self.subject.username}.>'
+
+
+class Chat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    messages = db.relationship('Message', backref='chat', lazy='dynamic')
+    name = db.Column(db.String(64))
+
+    def __repr__(self):
+        return f'<Chat {self.id}. Name {self.name or "missing"}.>'
 
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     message = db.Column(db.String(256))
-    relation_id = db.Column(db.Integer, db.ForeignKey('relation.id'))
+    chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'))
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return '{} wrote a message to {} on {}'.format(
-            self.relation.owner.username, self.relation.subject.username, self.date)
-
+        return f'<Message {self.id}.>'

@@ -6,7 +6,6 @@
 
     <h2>About me:</h2>
     <p>
-        id: {{ current_user.id }}<br>
         Number: {{ current_user.phone_number }}<br>
         Email: {{ current_user.email }}<br>
         Contacts: {{ current_user.followed.count() }}<br>
@@ -14,7 +13,7 @@
     <h2>Add contact:</h2>
         <div class="row">
         <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            {{ wtf.quick_form(form_search_contact) }}
             {% include '_validation_error.html' %}
         </div>
     </div>
@@ -22,13 +21,19 @@
 
     <h2>Your contacts:</h2>
     {% for follower in current_user.followed.all() %}
-        <table>
-            <tr valign="top">
-                <td><a href="{{ url_for('main.user', username=follower.username) }}">{{ follower.username }}</a></td>
-            </tr>
-        </table>
+        <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+        <a href="{{ url_for('main.user', username=follower.username) }}">{{ follower.username }}</a></br>
     {% else %}
         You haven't contacts
     {% endfor %}
 
+    <h2>Your chats:</h2>
+    {% for chat in current_user.chats.all() %}
+        <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+        <a href="{{ url_for('main.group_chat', chat_name=chat.name) }}">{{ chat.name }}</a>
+        </br>
+    {% else %}
+        You haven't chats</br>
+    {% endfor %}
+    </br><a href="{{ url_for('main.group_chat', chat_name='creating_chat') }}">Create new chat</a>
 {% endblock %}

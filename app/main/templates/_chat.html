@@ -1,0 +1,35 @@
+<h2>Chat:</h2>
+{% if messages %}
+    {% for message in messages %}
+        {{ message.user.username }}
+        {{ moment(message.date).fromNow() }}:</br>
+        {{ message.message }}</br></br>
+    {% else %}
+        You haven't sent or received messages from this chat
+    {% endfor %}
+
+
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> {{ page-1 }}
+                </a>
+            </li>
+            <li class="previous{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    {{ page+1 }} <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% else %}
+Send a message to start chatting
+{% endif %}
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form_chat) }}
+            {% include '_validation_error.html' %}
+        </div>
+    </div>
+
