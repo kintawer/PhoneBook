@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h1>{{ current_user.username }} добро пожаловать. Снова.</h1>
+
+    <h2>About me:</h2>
+    <p>
+        Number: {{ current_user.phone_number }}<br>
+        Email: {{ current_user.email }}<br>
+        Contacts: {{ current_user.followed.count() }}<br>
+    </p>
+    <h2>Add contact:</h2>
+        <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form_search_contact) }}
+            {% include '_validation_error.html' %}
+        </div>
+    </div>
+
+
+    <h2>Your contacts:</h2>
+    {% for follower in current_user.followed.all() %}
+        <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+        <a href="{{ url_for('main.user', username=follower.username) }}">{{ follower.username }}</a></br>
+    {% else %}
+        You haven't contacts
+    {% endfor %}
+
+    <h2>Your chats:</h2>
+    {% for chat in current_user.chats.all() %}
+        <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+        <a href="{{ url_for('main.group_chat', chat_name=chat.name) }}">{{ chat.name }}</a>
+        </br>
+    {% else %}
+        You haven't chats</br>
+    {% endfor %}
+    </br><a href="{{ url_for('main.group_chat', chat_name='creating_chat') }}">Create new chat</a>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+    {% if user == current_user %}
+        <h1>{{ user.username }} (it is you)</h1>
+    {% elif relation.username %}
+        <h1>{{ user.username }} ({{ relation.username }})</h1>
+    {% else %}
+        <h1>{{ user.username }}</h1>
+    {% endif %}
+
+    <p>
+        id: {{ user.id }}<br>
+        Number: {{ user.phone_number }}<br>
+        Email: {{ user.email }}<br>
+        Contacts: {{ user.followed.count() }}<br>
+        {% if relation.note %}
+            Your note: {{ relation.note }}
+        {% endif %}
+    </p>
+
+
+    {% if user == current_user %}
+        <p><a href="{{ url_for('main.index') }}"></a></p>
+    {% elif not current_user.is_following(user) %}
+        <p><a href="{{ url_for('main.follow', username=user.username) }}">Add contact in phone book</a></p>
+    {% else %}
+        <p><a href="{{ url_for('main.unfollow', username=user.username) }}">delete contact from phonebook</a></p>
+    {% endif %}<br>
+
+
+
+    <h2>Add additional info about contact (only for you):</h2>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form_relation) }}
+            {% include '_validation_error.html' %}
+        </div>
+    </div>
+
+    {% include '_chat.html' %}
+
+{% endblock %}
